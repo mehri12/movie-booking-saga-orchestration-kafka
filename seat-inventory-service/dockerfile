@@ -1,0 +1,21 @@
+# ---------- Étape 1 : compiler avec Maven ----------
+FROM maven:3.9-eclipse-temurin-21 AS build
+WORKDIR /workspace
+
+# 1. D'abord le module commun
+COPY movie-booking-commons/pom.xml movie-booking-commons/pom.xml
+COPY movie-booking-commons/src movie-booking-commons/src
+RUN mvn -f movie-booking-commons/pom.xml clean install -DskipTests
+
+# 2. Ensuite le service
+COPY seat-inventory-service/pom.xml seat-inventory-service/pom.xml
+COPY seat-inventory-service/src seat-inventory-service/src
+RUN mvn -f seat-inventory-service/pom.xml clean package -DskipTests
+
+# ---------- Étape 2 : image finale légère ----------
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+COPY --from=build /workspace/seat-inventory-service/target/*.jar app.jar
+
+EXPOSE 9292
+ENTRYPOINT ["java", "-jar", "app.jar"]
