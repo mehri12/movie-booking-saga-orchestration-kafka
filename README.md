@@ -4,6 +4,9 @@ Système de réservation de places de cinéma en microservices (Spring Boot + Ap
 Une **saga orchestrée** coordonne la réservation, le verrouillage des sièges et le paiement,
 avec **compensation** automatique en cas d'échec.
 
+
+![CI](https://github.com/mehri12/movie-booking-saga-orchestration-kafka/actions/workflows/ci.yml/badge.svg)
+
 ## Architecture
 
 ```mermaid
