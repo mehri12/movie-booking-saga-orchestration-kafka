@@ -1,4 +1,4 @@
-INSERT INTO seat_inventory (theaterId, showId, seatNumber, screenId, status, currentBookingId, lastUpdated) VALUES
+INSERT IGNORE INTO seat_inventory (theaterId, showId, seatNumber, screenId, status, currentBookingId, lastUpdated) VALUES
 -- 🎬 Screen 1: Avengers Endgame (Evening Show)
 ('THEATER_PVR_001', 'SHOW_101', 'A1', 'SCREEN_1', 'AVAILABLE', NULL, NOW()),
 ('THEATER_PVR_001', 'SHOW_101', 'A2', 'SCREEN_1', 'AVAILABLE', NULL, NOW()),
