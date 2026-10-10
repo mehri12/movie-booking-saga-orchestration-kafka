@@ -100,4 +100,5 @@ public class SeatInventory {
     public void setLastUpdated(LocalDateTime lastUpdated) {
         this.lastUpdated = lastUpdated;
     }
+
 }

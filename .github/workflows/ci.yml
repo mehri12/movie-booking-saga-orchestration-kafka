@@ -31,7 +31,7 @@ jobs:
         run: mvn -B -f movie-booking-commons/pom.xml clean install -DskipTests
 
       - name: Compiler ${{ matrix.service }}
-        run: mvn -B -f ${{ matrix.service }}/pom.xml clean package -DskipTests
+        run: mvn -B -f ${{ matrix.service }}/pom.xml clean verify -Dtest='*ServiceTest' -Dsurefire.failIfNoSpecifiedTests=false
 
   build-orchestrator:
     runs-on: ubuntu-latest
