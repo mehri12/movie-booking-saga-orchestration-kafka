@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-services:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - booking-service
+          - seat-inventory-service
+          - payment-service
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Installer le module commun
+        run: mvn -B -f movie-booking-commons/pom.xml clean install -DskipTests
+
+      - name: Compiler ${{ matrix.service }}
+        run: mvn -B -f ${{ matrix.service }}/pom.xml clean package -DskipTests
+
+  build-orchestrator:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Compiler l'orchestrateur
+        run: mvn -B -f orchestrator-service/pom.xml clean package -DskipTests
