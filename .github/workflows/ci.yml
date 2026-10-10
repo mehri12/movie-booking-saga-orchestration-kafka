@@ -47,7 +47,7 @@ jobs:
           cache: maven
 
       - name: Compiler l'orchestrateur
-        run: mvn -B -f orchestrator-service/pom.xml clean package -DskipTests
+        run: mvn -B -f orchestrator-service/pom.xml clean verify
 
   docker-images:
     needs: [ build-services, build-orchestrator ]

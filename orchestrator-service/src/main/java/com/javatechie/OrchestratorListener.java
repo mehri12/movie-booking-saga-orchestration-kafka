@@ -41,7 +41,7 @@ public class OrchestratorListener {
                     null, null, event.amount()));
         }else {
             // sièges indisponibles -> la réservation échoue
-            producer.sendCommand("BOOKING_COMMAND_TOPIC",
+            producer.sendCommand(BOOKING_COMMAND_TOPIC,
                     new SagaCommand(event.bookingId(), "FAIL_BOOKING",
                             null,null,  0));
         }
