@@ -23,6 +23,18 @@ services:
       timeout: 10s
       retries: 10
 
+  kafka-init:
+    image: apache/kafka:3.8.0
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        for topic in movie-booking-events seat-command-topic seat-reserved-topic payment-command-topic payment-events booking-command-topic; do
+          /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:29092 --create --if-not-exists --topic $$topic --partitions 3 --replication-factor 1
+        done
+
   mysql:
     image: mysql:8
     ports:
@@ -44,8 +56,8 @@ services:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
     depends_on:
-      kafka:
-        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
 
   booking-service:
     build:
@@ -58,8 +70,8 @@ services:
       SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/mojtabahjava?allowPublicKeyRetrieval=true&useSSL=false"
       SPRING_DATASOURCE_PASSWORD: root
     depends_on:
-      kafka:
-        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
       mysql:
         condition: service_healthy
 
@@ -74,8 +86,8 @@ services:
       SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/mojtabahjava?allowPublicKeyRetrieval=true&useSSL=false"
       SPRING_DATASOURCE_PASSWORD: root
     depends_on:
-      kafka:
-        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
       mysql:
         condition: service_healthy
 
@@ -88,8 +100,8 @@ services:
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     depends_on:
-      kafka:
-        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
 
   orchestrator-service:
     build:
@@ -99,5 +111,5 @@ services:
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     depends_on:
-      kafka:
-        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully

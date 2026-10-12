@@ -53,6 +53,9 @@ attendre_listeners seat-service 1 || exit 1
 attendre_listeners payment-service 1 || exit 1
 attendre_listeners orchestrator-service 3 || exit 1
 
+echo "Pause de stabilisation des groupes Kafka..."
+sleep 15
+
 echo
 echo "=== Scénario 1 : tout réussit (A1, A2, 1000) ==="
 ID=$(reserver '{"userId":"user1","showId":"SHOW_101","seatIds":["A1","A2"],"amount":1000}')
