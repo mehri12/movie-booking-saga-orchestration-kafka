@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-config
+  namespace: saga
+data:
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-config
+  namespace: saga
+data:
+  SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/mojtabahjava?allowPublicKeyRetrieval=true&useSSL=false"

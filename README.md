@@ -119,3 +119,43 @@ curl -X POST http://localhost:9191/booking-service/bookSeat \
 - Les sièges restent `LOCKED` après un paiement réussi (jamais `RESERVED`)
 - Pas encore de tests automatisés ni de CI
 
+
+## Déploiement sur Kubernetes (minikube)
+
+Les manifestes sont dans `k8s/`. Les images sont celles publiées par la CI sur GitHub Container Registry.
+
+Prérequis : minikube avec au moins 4 Go de mémoire.
+
+```bash
+minikube start --cpus=max --memory=4096
+
+kubectl apply -f k8s/00-namespace.yml
+kubectl apply -f k8s/10-mysql.yml
+kubectl apply -f k8s/20-kafka.yml
+kubectl wait -n saga --for=condition=available deployment/mysql deployment/kafka --timeout=300s
+kubectl apply -f k8s/21-kafka-topics-job.yml
+kubectl wait -n saga --for=condition=complete job/kafka-init --timeout=300s
+kubectl apply -f k8s/30-config.yml
+kubectl apply -f k8s/40-apps.yml
+```
+
+Kubernetes n'a pas d'équivalent de `depends_on` : `kubectl wait` impose l'ordre (MySQL et Kafka, puis les topics,
+puis les applications).
+
+Test de bout en bout : ouvrir un tunnel vers Booking dans un terminal, puis lancer le script dans un second.
+
+```bash
+kubectl port-forward -n saga svc/booking-service 9191:9191
+bash scripts/e2e-k8s.sh
+```
+
+Nettoyage : `kubectl delete namespace saga`.
+
+Les mots de passe des manifestes sont des valeurs de démonstration : dans un vrai projet, on utilise un gestionnaire de secrets.
+
+### Ce que Kubernetes apporte ici
+
+- **Auto-réparation** : un Pod supprimé est recréé par son Deployment.
+- **Résilience** : si l'orchestrateur est arrêté, les réservations restent dans Kafka et sont traitées à son retour.
+- **Mise à l'échelle** : `kubectl scale -n saga deploy/payment-service --replicas=2` répartit les 3 partitions
+  du topic entre les copies.

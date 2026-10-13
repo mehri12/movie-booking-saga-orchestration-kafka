@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kafka-init
+  namespace: saga
+spec:
+  backoffLimit: 10
+  template:
+    spec:
+      restartPolicy: OnFailure
+      enableServiceLinks: false
+      containers:
+        - name: kafka-init
+          image: apache/kafka:3.8.0
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -e
+              for topic in movie-booking-events seat-command-topic seat-reserved-topic payment-command-topic payment-events booking-command-topic; do
+                /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic $topic --partitions 3 --replication-factor 1
+              done
