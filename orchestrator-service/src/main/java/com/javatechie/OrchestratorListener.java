@@ -4,6 +4,7 @@ import com.javatechie.events.BookingCreatedEvent;
 import com.javatechie.events.BookingPaymentEvent;
 import com.javatechie.events.SagaCommand;
 import com.javatechie.events.SeatReservedEvent;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -18,11 +19,14 @@ import static com.javatechie.Common.KafkaConfigProperties.*;
 public class OrchestratorListener {
 
     private final OrchestratorProducer producer;
+    private final MeterRegistry registry;
 
     // ÉTAPE 1 : une réservation vient d'être créée -> ordre à Seat de verrouiller
     @KafkaListener(topics = MOVIE_BOOKING_EVENTS_TOPIC, groupId = ORCHESTRATOR_GROUP)
     public void onBookingCreated(BookingCreatedEvent event){
         log.info("orchestrator <- réservation crée (bookingId={})",event.bookingId());
+
+        registry.counter("saga.started").increment();
 
         producer.sendCommand(SEAT_COMMAND_TOPIC,new SagaCommand(event.bookingId(),
                 "RESERVE_SEATS",event.showId(),event.seatIds(),event.amount()));
@@ -40,6 +44,7 @@ public class OrchestratorListener {
                     new SagaCommand(event.bookingId(), "PROCESS_PAYMENT",
                     null, null, event.amount()));
         }else {
+            registry.counter("saga.completed", "outcome", "failed", "reason", "seats_unavailable").increment();
             // sièges indisponibles -> la réservation échoue
             producer.sendCommand(BOOKING_COMMAND_TOPIC,
                     new SagaCommand(event.bookingId(), "FAIL_BOOKING",
@@ -53,10 +58,12 @@ public class OrchestratorListener {
                 event.bookingId(),event.paymentCompleted());
 
         if(event.paymentCompleted()){
+            registry.counter("saga.completed", "outcome", "confirmed", "reason", "none").increment();
             producer.sendCommand(BOOKING_COMMAND_TOPIC,
                     new SagaCommand(event.bookingId(), "CONFIRM_BOOKING",
                             null,null,event.amount()));
         }else{
+            registry.counter("saga.completed", "outcome", "failed", "reason", "payment_refused").increment();
             // paiement refusé -> compensation : libérer les sièges + échec
             producer.sendCommand(SEAT_COMMAND_TOPIC,
                     new SagaCommand(event.bookingId(), "RELEASE_SEATS",

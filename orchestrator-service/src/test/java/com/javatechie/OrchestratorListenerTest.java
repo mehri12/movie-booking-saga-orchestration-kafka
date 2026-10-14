@@ -19,15 +19,19 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+
 public class OrchestratorListenerTest {
 
     private OrchestratorProducer producer;
+    private SimpleMeterRegistry registry;
     private OrchestratorListener listener;
 
     @BeforeEach
     void setUp() {
         producer = mock(OrchestratorProducer.class);
-        listener = new OrchestratorListener(producer);
+        registry = new SimpleMeterRegistry();
+        listener = new OrchestratorListener(producer, registry);
     }
 
     @Test
@@ -82,5 +86,13 @@ public class OrchestratorListenerTest {
         ArgumentCaptor<SagaCommand> bookingCaptor = ArgumentCaptor.forClass(SagaCommand.class);
         verify(producer).sendCommand(eq(BOOKING_COMMAND_TOPIC), bookingCaptor.capture());
         assertEquals("FAIL_BOOKING", bookingCaptor.getValue().action());
+    }
+
+    @Test
+    void paiementRefuse_compteUneSagaEchoueePourPaiementRefuse() {
+        listener.onPayementResult(new BookingPaymentEvent("b9", false, 2500));
+
+        assertEquals(1.0,
+                registry.counter("saga.completed", "outcome", "failed", "reason", "payment_refused").count());
     }
 }

@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 10s
+
+scrape_configs:
+  - job_name: saga-services
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["booking-service:9191"]
+        labels:
+          service: booking
+      - targets: ["seat-service:9292"]
+        labels:
+          service: seat
+      - targets: ["payment-service:9393"]
+        labels:
+          service: payment
+      - targets: ["orchestrator-service:9494"]
+        labels:
+          service: orchestrator
