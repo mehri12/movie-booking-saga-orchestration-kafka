@@ -159,3 +159,21 @@ Les mots de passe des manifestes sont des valeurs de démonstration : dans un vr
 - **Résilience** : si l'orchestrateur est arrêté, les réservations restent dans Kafka et sont traitées à son retour.
 - **Mise à l'échelle** : `kubectl scale -n saga deploy/payment-service --replicas=2` répartit les 3 partitions
   du topic entre les copies.
+
+
+## Observabilité
+
+Chaque service expose ses métriques (`/actuator/prometheus`, via Spring Boot Actuator et Micrometer).
+Prometheus les collecte toutes les 10 secondes, et Grafana affiche un tableau de bord chargé automatiquement.
+
+| Outil | Adresse |
+|---|---|
+| Prometheus | http://localhost:9090 |
+| Grafana | http://localhost:3000 (admin / admin, valeurs de démonstration) |
+
+Le tableau de bord « Saga de réservation » montre l'état des services, le nombre de sagas confirmées et échouées
+(avec la cause de l'échec), le trafic HTTP, la mémoire et le retard des consommateurs Kafka.
+
+Les métriques métier (`saga_started_total`, `saga_completed_total`) sont produites par l'orchestrateur.
+Les étiquettes (`outcome`, `reason`) ont un nombre limité de valeurs : on n'y met jamais un identifiant de réservation,
+car chaque valeur différente créerait une nouvelle série dans Prometheus.
