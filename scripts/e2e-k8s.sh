@@ -5,6 +5,8 @@ set -uo pipefail
 URL="http://localhost:9191/booking-service/bookSeat"
 ECHECS=0
 
+
+
 # Exécute une requête SQL dans le conteneur MySQL et renvoie le résultat
 sql() {
   kubectl exec -n saga deploy/mysql -- mysql -uroot -proot -N -B -e "$1" 2>/dev/null | tr -d '\r\n'
@@ -43,7 +45,7 @@ attendre_valeur() {
 
 # Envoie une réservation et affiche le code de réservation reçu
 reserver() {
-  curl -s -X POST "$URL" -H "Content-Type: application/json" -d "$1" \
+  curl -sS -X POST "$URL" -H "Content-Type: application/json" -d "$1" \
     | grep -o '"reservationId":"[^"]*"' | cut -d'"' -f4
 }
 

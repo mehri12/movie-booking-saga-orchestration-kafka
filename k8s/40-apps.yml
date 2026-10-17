@@ -21,16 +21,45 @@ spec:
           envFrom:
             - configMapRef:
                 name: kafka-config
+          env:
+            # Active les groupes /actuator/health/liveness et /readiness
+            - name: MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED
+              value: "true"
+            # La JVM utilise au plus 70% de la limite mémoire du conteneur
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:MaxRAMPercentage=70"
           resources:
             requests:
-              memory: "256Mi"
+              memory: "256Mi"   # réservé au scheduling
               cpu: "100m"
-          readinessProbe:
-            tcpSocket:
+            limits:
+              memory: "640Mi"   # au-delà : OOMKilled
+              cpu: "500m"
+          # 1) Startup : laisse le temps de démarrer (36 x 5s = 180s max)
+          #    Tant qu'elle n'a pas réussi, liveness et readiness sont suspendues.
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
               port: 9494
-            initialDelaySeconds: 30
             periodSeconds: 5
-            failureThreshold: 20
+            timeoutSeconds: 3
+            failureThreshold: 60
+          # 2) Readiness : le pod peut-il recevoir du trafic ? Sinon retiré du Service.
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 9494
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          # 3) Liveness : le pod est-il bloqué ? Sinon redémarré.
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 9494
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -55,16 +84,39 @@ spec:
           envFrom:
             - configMapRef:
                 name: kafka-config
+          env:
+            - name: MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED
+              value: "true"
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:MaxRAMPercentage=70"
           resources:
             requests:
               memory: "256Mi"
               cpu: "100m"
-          readinessProbe:
-            tcpSocket:
+            limits:
+              memory: "640Mi"
+              cpu: "500m"
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
               port: 9393
-            initialDelaySeconds: 30
             periodSeconds: 5
-            failureThreshold: 20
+            timeoutSeconds: 3
+            failureThreshold: 60
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 9393
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 9393
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -97,16 +149,38 @@ spec:
                 secretKeyRef:
                   name: mysql-secret
                   key: MYSQL_ROOT_PASSWORD
+            - name: MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED
+              value: "true"
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:MaxRAMPercentage=70"
           resources:
             requests:
               memory: "256Mi"
               cpu: "100m"
-          readinessProbe:
-            tcpSocket:
+            limits:
+              memory: "640Mi"
+              cpu: "500m"
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
               port: 9292
-            initialDelaySeconds: 30
             periodSeconds: 5
-            failureThreshold: 20
+            timeoutSeconds: 3
+            failureThreshold: 60
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 9292
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 9292
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -139,16 +213,38 @@ spec:
                 secretKeyRef:
                   name: mysql-secret
                   key: MYSQL_ROOT_PASSWORD
+            - name: MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED
+              value: "true"
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:MaxRAMPercentage=70"
           resources:
             requests:
               memory: "256Mi"
               cpu: "100m"
-          readinessProbe:
-            tcpSocket:
+            limits:
+              memory: "640Mi"
+              cpu: "500m"
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
               port: 9191
-            initialDelaySeconds: 30
             periodSeconds: 5
-            failureThreshold: 20
+            timeoutSeconds: 3
+            failureThreshold: 60
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 9191
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 9191
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
 ---
 apiVersion: v1
 kind: Service
