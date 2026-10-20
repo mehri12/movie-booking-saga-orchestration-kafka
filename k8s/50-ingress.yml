@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: booking-ingress
+  namespace: saga
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: booking.local
+      http:
+        paths:
+          - path: /booking-service
+            pathType: Prefix
+            backend:
+              service:
+                name: booking-service
+                port:
+                  number: 9191

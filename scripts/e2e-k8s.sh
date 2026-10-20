@@ -2,14 +2,20 @@
 # Test de bout en bout : les scénarios de la saga sur le système complet (docker compose)
 set -uo pipefail
 
-URL="http://localhost:9191/booking-service/bookSeat"
+URL="http://127.0.0.1/booking-service/bookSeat"
+
+if ! curl -s -o /dev/null -H "Host: booking.local" "$URL"; then
+  echo "ECHEC Ingress injoignable : lancer 'minikube tunnel' dans un autre terminal"
+  exit 1
+fi
+
 ECHECS=0
 
 
 
 # Exécute une requête SQL dans le conteneur MySQL et renvoie le résultat
 sql() {
-  kubectl exec -n saga deploy/mysql -- mysql -uroot -proot -N -B -e "$1" 2>/dev/null | tr -d '\r\n'
+    kubectl exec -n saga deploy/mysql -- sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -N -B -e "$1"' _ "$1" 2>/dev/null | tr -d '\r\n'
 }
 
 # Attend que les listeners Kafka d'un service soient prêts
@@ -45,7 +51,7 @@ attendre_valeur() {
 
 # Envoie une réservation et affiche le code de réservation reçu
 reserver() {
-  curl -sS -X POST "$URL" -H "Content-Type: application/json" -d "$1" \
+  curl -sS -X POST "$URL" -H "Host: booking.local" -H "Content-Type: application/json" -d "$1" \
     | grep -o '"reservationId":"[^"]*"' | cut -d'"' -f4
 }
 
@@ -58,6 +64,8 @@ attendre_listeners orchestrator-service 3 || exit 1
 echo "Pause de stabilisation des groupes Kafka..."
 sleep 15
 
+echo "=== Remise à zéro des sièges de test ==="
+kubectl exec -n saga deploy/mysql -- sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" mojtabahjava -e "$1"' _ "UPDATE seat_inventory SET status='AVAILABLE', currentBookingId=NULL WHERE seatNumber IN ('A1','A2','A5');" 2>/dev/null
 echo
 echo "=== Scénario 1 : tout réussit (A1, A2, 1000) ==="
 ID=$(reserver '{"userId":"user1","showId":"SHOW_101","seatIds":["A1","A2"],"amount":1000}')
