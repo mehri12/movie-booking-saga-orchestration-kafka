@@ -23,3 +23,7 @@ management:
   metrics:
     tags:
       application: payment-service
+  endpoint:
+    health:
+      probes:
+        enabled: true

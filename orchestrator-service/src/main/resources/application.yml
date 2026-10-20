@@ -20,3 +20,7 @@ management:
   metrics:
     tags:
       application: orchestrator-service
+  endpoint:
+    health:
+      probes:
+        enabled: true

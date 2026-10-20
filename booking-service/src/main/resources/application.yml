@@ -36,3 +36,8 @@ management:
   metrics:
     tags:
       application: booking-service
+
+  endpoint:
+    health:
+      probes:
+        enabled: true

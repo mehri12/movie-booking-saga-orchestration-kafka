@@ -1,12 +1,4 @@
 
-apiVersion: v1
-kind: Secret
-metadata:
-  name: mysql-secret
-  namespace: saga
-type: Opaque
-stringData:
-  MYSQL_ROOT_PASSWORD: "root"
 ---
 apiVersion: apps/v1
 kind: Deployment

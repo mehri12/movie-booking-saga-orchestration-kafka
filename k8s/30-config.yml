@@ -13,3 +13,4 @@ metadata:
   namespace: saga
 data:
   SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/mojtabahjava?allowPublicKeyRetrieval=true&useSSL=false"
+  SPRING_DATASOURCE_USERNAME: "saga_app"

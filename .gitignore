@@ -4,3 +4,6 @@ target/
 *.log
 build.log
 .DS_Store
+# Secrets locaux
+.env
+*.secret.yml
