@@ -105,6 +105,13 @@ jobs:
       - name: Récupérer le code
         uses: actions/checkout@v4
 
+      - name: Créer le fichier .env de test
+        run: |
+          {
+            echo "MYSQL_ROOT_PASSWORD=$(openssl rand -base64 18 | tr -d '/+=')"
+            echo "GRAFANA_ADMIN_PASSWORD=$(openssl rand -base64 18 | tr -d '/+=')"
+          } > .env  
+
       - name: Démarrer tout le système
         run: docker compose up -d --build
 

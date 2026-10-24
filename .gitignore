@@ -7,3 +7,6 @@ build.log
 # Secrets locaux
 .env
 *.secret.yml
+
+.env.*
+!.env.example
