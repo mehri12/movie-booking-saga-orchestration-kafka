@@ -88,4 +88,12 @@ public class BookingService {
             log.warn("BookingService:: No booking found with bookingId {}", bookingId);
         }
     }
+
+    public BookingResponse getBooking(String bookingCode) {
+        var booking = bookingRepository.findByBookingCode(bookingCode);
+        if (booking == null) {
+            return null;
+        }
+        return EntityToBookingResponseMapper.map(booking);
+    }
 }

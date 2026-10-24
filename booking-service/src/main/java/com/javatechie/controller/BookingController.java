@@ -4,10 +4,7 @@ import com.javatechie.request.BookingRequest;
 import com.javatechie.response.BookingResponse;
 import com.javatechie.service.BookingService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/booking-service")
@@ -23,6 +20,15 @@ public class BookingController {
     @PostMapping("/bookSeat")
     public ResponseEntity<?> bookSeat(@RequestBody BookingRequest request) {
         BookingResponse response = bookingService.bookSeats(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/bookings/{reservationId}")
+    public ResponseEntity<BookingResponse> getBooking(@PathVariable String reservationId) {
+        BookingResponse response = bookingService.getBooking(reservationId);
+        if (response == null) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(response);
     }
 }
