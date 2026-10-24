@@ -7,7 +7,7 @@ ECHECS=0
 
 # Exécute une requête SQL dans le conteneur MySQL et renvoie le résultat
 sql() {
-  docker compose exec -T mysql mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -N -B -e "$1" 2>/dev/null | tr -d '\r\n'
+  docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -N -B -e "$1"' _ "$1" 2>/dev/null | tr -d '\r\n'
 }
 
 # Attend que les listeners Kafka d'un service soient prêts
