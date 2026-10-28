@@ -1,0 +1,6 @@
+/* You can add global styles to this file, and also import other style files */
+/* Styles globaux : le reste est dans app.component.css */
+body {
+  margin: 0;
+  background: #e8ecf2;
+}

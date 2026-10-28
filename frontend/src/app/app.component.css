@@ -1,0 +1,363 @@
+:host {
+  --ink: #1f2633;
+  --ink-soft: #566074;
+  --wall: #e8ecf2;
+  --line: #c3cad6;
+  --velvet: #7b1e3a;
+  --velvet-deep: #5b1329;
+  --ok: #24694b;
+  --ko: #a02f1d;
+  --wait: #8a5d0c;
+
+  display: block;
+  min-height: 100vh;
+  background: var(--wall);
+  color: var(--ink);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+}
+
+.page {
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 4rem;
+}
+
+/* En-tête */
+.intro {
+  max-width: 40rem;
+  margin-bottom: 2.5rem;
+}
+
+h1 {
+  margin: 0 0 0.6rem;
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.intro p {
+  max-width: 36rem;
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+h2 {
+  margin: 0 0 1.25rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+/* Mise en page : formulaire à gauche, billet à droite */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 24rem) minmax(0, 1fr);
+  gap: 3rem;
+  align-items: start;
+}
+
+/* Formulaire */
+.field {
+  display: grid;
+  gap: 0.35rem;
+  margin-bottom: 1.1rem;
+}
+
+label,
+legend {
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+input,
+select {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 0.4rem;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+}
+
+input:focus-visible,
+select:focus-visible,
+button:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+/* Plan de salle */
+.seats {
+  margin: 0 0 1.25rem;
+  padding: 0;
+  border: 0;
+}
+
+.seats legend {
+  margin-bottom: 0.6rem;
+  padding: 0;
+}
+
+.screen {
+  height: 1.6rem;
+  margin: 0 0.5rem 1rem;
+  padding-top: 0.25rem;
+  border-top: 4px solid var(--ink);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  font-size: 0.8rem;
+  text-align: center;
+  color: var(--ink-soft);
+}
+
+.seat-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.seat {
+  width: 3.1rem;
+  height: 2.9rem;
+  border: 1px solid var(--line);
+  border-radius: 0.7rem 0.7rem 0.25rem 0.25rem;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.seat:hover {
+  border-color: var(--velvet);
+}
+
+.seat.selected {
+  border-color: var(--velvet);
+  background: var(--velvet);
+  color: #fff;
+}
+
+/* Bouton et erreur */
+.book {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 0;
+  border-radius: 0.4rem;
+  background: var(--velvet);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.book:hover:not(:disabled) {
+  background: var(--velvet-deep);
+}
+
+.book:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.error {
+  margin: 0 0 1rem;
+  padding: 0.7rem 0.9rem;
+  border-left: 4px solid var(--ko);
+  background: #fff;
+  color: var(--ko);
+  font-size: 0.92rem;
+}
+
+/* Billet : l'élément mis en avant de la page */
+.ticket {
+  display: grid;
+  grid-template-columns: 1fr 10rem;
+  border-radius: 0.5rem;
+  background: #fff;
+  box-shadow: 0 18px 30px -22px rgba(31, 38, 51, 0.55);
+}
+
+.ticket-main {
+  padding: 1.6rem 1.6rem 1.6rem 1.8rem;
+}
+
+.ticket-show {
+  margin: 0;
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.ticket-seats {
+  margin: 0.2rem 0 1rem;
+  color: var(--ink-soft);
+}
+
+.ticket-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 1rem;
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.ticket-facts dt {
+  color: var(--ink-soft);
+}
+
+.ticket-facts dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.status-message {
+  margin: 1.1rem 0 0;
+  font-size: 0.95rem;
+}
+
+/* Talon détachable, séparé par une perforation */
+.ticket-stub {
+  position: relative;
+  display: grid;
+  align-content: center;
+  gap: 0.25rem;
+  padding: 1.2rem;
+  border-left: 2px dashed var(--line);
+  text-align: center;
+}
+
+.ticket-stub::before,
+.ticket-stub::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  background: var(--wall);
+  transform: translateX(-50%);
+}
+
+.ticket-stub::before {
+  top: -0.7rem;
+}
+
+.ticket-stub::after {
+  bottom: -0.7rem;
+}
+
+.stub-label {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+.stub-code {
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  word-break: break-all;
+}
+
+.stamp {
+  margin-top: 0.9rem;
+  padding: 0.3rem 0.5rem;
+  border: 2px solid currentColor;
+  border-radius: 0.3rem;
+  font-weight: 700;
+  transform: rotate(-4deg);
+}
+
+/* Couleur et mouvement selon l'état : le seul mouvement de la page */
+.ticket[data-status='PENDING'] .stamp {
+  color: var(--wait);
+  animation: waiting 1.4s ease-in-out infinite;
+}
+
+.ticket[data-status='CONFIRMED'] .stamp,
+.ticket[data-status='FAILED'] .stamp {
+  animation: stamp-in 0.3s ease-out;
+}
+
+.ticket[data-status='CONFIRMED'] .stamp {
+  color: var(--ok);
+}
+
+.ticket[data-status='FAILED'] .stamp {
+  color: var(--ko);
+}
+
+@keyframes waiting {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@keyframes stamp-in {
+  from {
+    transform: rotate(-4deg) scale(1.35);
+    opacity: 0;
+  }
+}
+
+/* Billet vide : invitation à agir */
+.ticket-empty {
+  padding: 2rem;
+  border: 2px dashed var(--line);
+  border-radius: 0.5rem;
+  color: var(--ink-soft);
+}
+
+.ticket-empty p {
+  max-width: 24rem;
+  margin: 0;
+}
+
+/* Écrans étroits */
+@media (max-width: 52rem) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 34rem) {
+  .ticket {
+    grid-template-columns: 1fr;
+  }
+
+  .ticket-stub {
+    border-top: 2px dashed var(--line);
+    border-left: 0;
+  }
+
+  .ticket-stub::before,
+  .ticket-stub::after {
+    top: 0;
+    bottom: auto;
+    transform: translate(-50%, -50%);
+  }
+
+  .ticket-stub::before {
+    left: 0;
+  }
+
+  .ticket-stub::after {
+    left: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stamp {
+    animation: none !important;
+  }
+}

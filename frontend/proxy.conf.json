@@ -1,0 +1,10 @@
+{
+  "/booking-service": {
+    "target": "http://127.0.0.1",
+    "secure": false,
+    "changeOrigin": false,
+    "headers": {
+      "host": "booking.local"
+    }
+  }
+}

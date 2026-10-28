@@ -1,0 +1,94 @@
+<main class="page">
+  <header class="intro">
+    <h1>Réservation de places de cinéma</h1>
+    <p>
+      Choisissez une salle et vos sièges. La demande traverse plusieurs services
+      (stock des sièges, paiement) : le billet change d'état quand le résultat arrive.
+    </p>
+  </header>
+
+  <div class="layout">
+    <section class="booking" aria-labelledby="booking-title">
+      <h2 id="booking-title">Votre réservation</h2>
+
+      <div class="field">
+        <label for="user">Nom d'utilisateur</label>
+        <input id="user" type="text" autocomplete="off" [(ngModel)]="userId" />
+      </div>
+
+      <div class="field">
+        <label for="show">Salle</label>
+        <select id="show" [ngModel]="showId" (ngModelChange)="onShowChange($event)">
+          @for (show of shows; track show.id) {
+            <option [value]="show.id">{{ show.title }}</option>
+          }
+        </select>
+      </div>
+
+      <fieldset class="seats">
+        <legend>Sièges</legend>
+        <div class="screen" aria-hidden="true">Écran</div>
+        <div class="seat-row">
+          @for (seat of seats; track seat) {
+            <button
+              type="button"
+              class="seat"
+              [class.selected]="isSelected(seat)"
+              [attr.aria-pressed]="isSelected(seat)"
+              (click)="toggleSeat(seat)"
+            >
+              {{ seat }}
+            </button>
+          }
+        </div>
+        <p class="hint">Certains sièges sont déjà pris : la réservation sera alors refusée.</p>
+      </fieldset>
+
+      <div class="field">
+        <label for="amount">Montant</label>
+        <input id="amount" type="number" min="1" [(ngModel)]="amount" />
+        <p class="hint">Dans les scénarios de test, 1000 est accepté et 2500 est refusé.</p>
+      </div>
+
+      @if (errorMessage) {
+        <p class="error" role="alert">{{ errorMessage }}</p>
+      }
+
+      <button type="button" class="book" [disabled]="inProgress" (click)="book()">
+        {{ bookLabel }}
+      </button>
+    </section>
+
+    <aside class="result" aria-live="polite" aria-labelledby="ticket-title">
+      <h2 id="ticket-title">Votre billet</h2>
+
+      @if (reservationId) {
+        <article class="ticket" [attr.data-status]="status">
+          <div class="ticket-main">
+            <p class="ticket-show">{{ bookedShowTitle }}</p>
+            <p class="ticket-seats">Sièges {{ bookedSeats.join(', ') }}</p>
+            <dl class="ticket-facts">
+              <dt>Utilisateur</dt>
+              <dd>{{ bookedUser }}</dd>
+              <dt>Montant</dt>
+              <dd>{{ bookedAmount }}</dd>
+            </dl>
+            <p class="status-message">{{ statusMessage }}</p>
+          </div>
+          <div class="ticket-stub">
+            <span class="stub-label">Code de réservation</span>
+            <span class="stub-code">{{ reservationId }}</span>
+            <span class="stamp">{{ statusLabel }}</span>
+          </div>
+        </article>
+      } @else {
+        <div class="ticket-empty">
+          <p>
+            Choisissez vos sièges puis lancez la réservation : votre billet
+            apparaîtra ici avec son état.
+          </p>
+        </div>
+      }
+    </aside>
+  </div>
+</main>
