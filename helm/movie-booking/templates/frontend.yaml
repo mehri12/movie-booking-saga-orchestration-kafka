@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.frontend.replicas }}
+  strategy:
+    {{- toYaml .Values.strategy | nindent 4 }}
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      # Le pod refuse de démarrer si l'image tourne en root.
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: frontend
+          image: {{ .Values.image.registry }}/{{ .Values.frontend.image }}:{{ .Values.image.tag }}
+          ports:
+            - containerPort: {{ .Values.frontend.port }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            {{- toYaml .Values.frontend.resources | nindent 12 }}
+          # /healthz est la route de santé définie dans nginx.conf.
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.frontend.port }}
+            {{- toYaml .Values.frontend.readinessProbe | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.frontend.port }}
+            {{- toYaml .Values.frontend.livenessProbe | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app: frontend
+  ports:
+    - port: {{ .Values.frontend.servicePort }}
+      targetPort: {{ .Values.frontend.port }}

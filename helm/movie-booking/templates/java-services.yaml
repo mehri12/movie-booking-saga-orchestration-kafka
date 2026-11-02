@@ -1,0 +1,81 @@
+{{- range $name, $svc := .Values.javaServices }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+  namespace: {{ $.Release.Namespace }}
+spec:
+  replicas: {{ $svc.replicas }}
+  strategy:
+    {{- toYaml $.Values.strategy | nindent 4 }}
+  selector:
+    matchLabels:
+      app: {{ $name }}
+  template:
+    metadata:
+      labels:
+        app: {{ $name }}
+    spec:
+      containers:
+        - name: {{ $name }}
+          image: {{ $.Values.image.registry }}/{{ $svc.image }}:{{ $.Values.image.tag }}
+          ports:
+            - containerPort: {{ $svc.port }}
+          envFrom:
+            - configMapRef:
+                name: kafka-config
+            {{- if $svc.database }}
+            - configMapRef:
+                name: db-config
+            {{- end }}
+          env:
+            {{- if $svc.database }}
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.database.passwordSecret.name }}
+                  key: {{ $.Values.database.passwordSecret.key }}
+            {{- end }}
+            # Active les groupes /actuator/health/liveness et /readiness
+            - name: MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED
+              value: "true"
+            # La JVM utilise au plus ce pourcentage de la limite mémoire du conteneur
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:MaxRAMPercentage={{ $.Values.javaCommon.jvmMaxRamPercentage }}"
+          resources:
+            {{- toYaml $.Values.javaCommon.resources | nindent 12 }}
+          # Startup : laisse le temps de démarrer. Tant qu'elle n'a pas réussi,
+          # liveness et readiness sont suspendues.
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: {{ $svc.port }}
+            {{- toYaml $.Values.javaCommon.startupProbe | nindent 12 }}
+          # Readiness : le pod peut-il recevoir du trafic ? Sinon retiré du Service.
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: {{ $svc.port }}
+            {{- toYaml $.Values.javaCommon.readinessProbe | nindent 12 }}
+          # Liveness : le pod est-il bloqué ? Sinon redémarré.
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: {{ $svc.port }}
+            {{- toYaml $.Values.javaCommon.livenessProbe | nindent 12 }}
+{{- if $svc.exposeService }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+  namespace: {{ $.Release.Namespace }}
+spec:
+  selector:
+    app: {{ $name }}
+  ports:
+    - port: {{ $svc.port }}
+      targetPort: {{ $svc.port }}
+{{- end }}
+{{- end }}

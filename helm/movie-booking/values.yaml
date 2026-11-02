@@ -1,0 +1,102 @@
+# Valeurs du chart. C'est le seul fichier à modifier pour changer
+# une image, un port, un nombre de répliques ou une limite.
+
+image:
+  registry: ghcr.io/mehri12
+  tag: latest
+
+# Contenu des ConfigMaps (données non sensibles).
+config:
+  kafkaBootstrapServers: "kafka:9092"
+  datasourceUrl: "jdbc:mysql://mysql:3306/mojtabahjava?allowPublicKeyRetrieval=true&useSSL=false"
+  datasourceUsername: "saga_app"
+
+# Le chart ne contient aucun mot de passe : il référence seulement un Secret
+# créé en ligne de commande (étape 2).
+database:
+  passwordSecret:
+    name: mysql-app-secret
+    key: MYSQL_APP_PASSWORD
+
+# Stratégie de mise à jour commune à tous les Deployments.
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+# Réglages communs aux quatre services Java.
+javaCommon:
+  jvmMaxRamPercentage: 70
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+    limits:
+      memory: 640Mi
+      cpu: 500m
+  startupProbe:
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 60
+  readinessProbe:
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+  livenessProbe:
+    periodSeconds: 20
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+# Les quatre services Java : un Deployment est produit pour chaque entrée.
+#   image          nom de l'image (dans le registre ci-dessus)
+#   port           port du conteneur, utilisé aussi par les probes
+#   replicas       nombre de pods
+#   database       true si le service utilise MySQL (db-config et mot de passe)
+#   exposeService  true pour créer aussi un Service devant le Deployment
+javaServices:
+  orchestrator-service:
+    image: orchestrator-service
+    port: 9494
+    replicas: 1
+    database: false
+  payment-service:
+    image: payment-service
+    port: 9393
+    replicas: 1
+    database: false
+  seat-service:
+    image: seat-service
+    port: 9292
+    replicas: 1
+    database: true
+  booking-service:
+    image: booking-service
+    port: 9191
+    replicas: 1
+    database: true
+    exposeService: true
+
+# Le frontend est différent des services Java : son propre bloc.
+frontend:
+  image: frontend
+  port: 8080
+  servicePort: 80
+  replicas: 1
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+  readinessProbe:
+    periodSeconds: 5
+    failureThreshold: 3
+  livenessProbe:
+    periodSeconds: 20
+    failureThreshold: 3
+
+ingress:
+  className: nginx
+  host: booking.local

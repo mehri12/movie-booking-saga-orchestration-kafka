@@ -1,0 +1,8 @@
+apiVersion: v2
+name: movie-booking
+description: "Réservation de places de cinéma (saga orchestrée avec Kafka) : 4 services Java, un frontend Angular et leur routage"
+type: application
+# Version du chart : change quand les modèles changent.
+version: 0.1.0
+# Version de l'application déployée : indicative.
+appVersion: "1.0.0"

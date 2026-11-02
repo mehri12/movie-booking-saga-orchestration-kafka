@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: booking-ingress
+  namespace: {{ .Release.Namespace }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          # NGINX choisit toujours la règle la plus précise : tout ce qui
+          # commence par /booking-service va à l'API, le reste à la page.
+          - path: /booking-service
+            pathType: Prefix
+            backend:
+              service:
+                name: booking-service
+                port:
+                  number: {{ index .Values.javaServices "booking-service" "port" }}
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: {{ .Values.frontend.servicePort }}
