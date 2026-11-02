@@ -14,9 +14,15 @@ ECHECS=0
 
 
 # Exécute une requête SQL dans le conteneur MySQL et renvoie le résultat
+
 sql() {
-    kubectl exec -n saga deploy/mysql -- sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -N -B -e "$1"' _ "$1" 2>/dev/null | tr -d '\r\n'
+    local requete="$1"
+
+    kubectl exec -n saga deploy/mysql -- \
+        sh -c 'mysql -h 127.0.0.1 -uroot -p"$MYSQL_ROOT_PASSWORD" -N -B -e "$1"' \
+        sh "$requete" 2>/dev/null | tr -d '\r\n'
 }
+
 
 # Attend que les listeners Kafka d'un service soient prêts
 attendre_listeners() {
@@ -65,7 +71,11 @@ echo "Pause de stabilisation des groupes Kafka..."
 sleep 15
 
 echo "=== Remise à zéro des sièges de test ==="
-kubectl exec -n saga deploy/mysql -- sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" mojtabahjava -e "$1"' _ "UPDATE seat_inventory SET status='AVAILABLE', currentBookingId=NULL WHERE seatNumber IN ('A1','A2','A5');" 2>/dev/null
+
+kubectl exec -n saga deploy/mysql -- \
+  sh -c 'mysql -h 127.0.0.1 -uroot -p"$MYSQL_ROOT_PASSWORD" mojtabahjava -e "$1"' \
+  sh "UPDATE seat_inventory SET status='AVAILABLE', currentBookingId=NULL WHERE seatNumber IN ('A1','A2','A5');"
+ 2>/dev/null
 echo
 echo "=== Scénario 1 : tout réussit (A1, A2, 1000) ==="
 ID=$(reserver '{"userId":"user1","showId":"SHOW_101","seatIds":["A1","A2"],"amount":1000}')
