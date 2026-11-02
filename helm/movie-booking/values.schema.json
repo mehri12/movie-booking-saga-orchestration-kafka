@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["image", "config", "database", "strategy", "javaCommon", "javaServices", "frontend", "ingress"],
+  "properties": {
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["registry", "tag"],
+      "properties": {
+        "registry": { "type": "string", "minLength": 1 },
+        "tag": { "type": "string", "minLength": 1 }
+      }
+    },
+    "config": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kafkaBootstrapServers", "datasourceUrl", "datasourceUsername"],
+      "properties": {
+        "kafkaBootstrapServers": { "type": "string", "minLength": 1 },
+        "datasourceUrl": { "type": "string", "minLength": 1 },
+        "datasourceUsername": { "type": "string", "minLength": 1 }
+      }
+    },
+    "database": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["passwordSecret"],
+      "properties": {
+        "passwordSecret": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "key"],
+          "properties": {
+            "name": { "type": "string", "minLength": 1 },
+            "key": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "strategy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "type": "string", "enum": ["RollingUpdate", "Recreate"] },
+        "rollingUpdate": { "type": "object" }
+      }
+    },
+    "javaCommon": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["jvmMaxRamPercentage", "resources", "startupProbe", "readinessProbe", "livenessProbe"],
+      "properties": {
+        "jvmMaxRamPercentage": { "type": "integer", "minimum": 1, "maximum": 100 },
+        "resources": { "type": "object" },
+        "startupProbe": { "type": "object" },
+        "readinessProbe": { "type": "object" },
+        "livenessProbe": { "type": "object" }
+      }
+    },
+    "javaServices": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["image", "port", "replicas", "database"],
+        "properties": {
+          "image": { "type": "string", "minLength": 1 },
+          "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+          "replicas": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3,
+            "description": "Plafond adapté à un minikube de 4 Go : au-delà, les pods ne démarrent pas à temps."
+          },
+          "database": { "type": "boolean" },
+          "exposeService": { "type": "boolean" }
+        }
+      }
+    },
+    "frontend": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["image", "port", "servicePort", "replicas", "resources", "readinessProbe", "livenessProbe"],
+      "properties": {
+        "image": { "type": "string", "minLength": 1 },
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "servicePort": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "replicas": { "type": "integer", "minimum": 0, "maximum": 3 },
+        "resources": { "type": "object" },
+        "readinessProbe": { "type": "object" },
+        "livenessProbe": { "type": "object" }
+      }
+    },
+    "ingress": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["className", "host"],
+      "properties": {
+        "className": { "type": "string", "minLength": 1 },
+        "host": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}
