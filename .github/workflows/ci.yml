@@ -153,3 +153,43 @@ jobs:
       - name: Arrêter le système
         if: always()
         run: docker compose down -v
+
+  e2e-kubernetes:
+    needs: [ docker-images ]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v4.3.1
+
+      - name: Créer un cluster kind
+        uses: helm/kind-action@v1
+        with:
+          cluster_name: saga
+          config: .github/kind-config.yaml
+
+      - name: Installer l'Ingress NGINX
+        run: |
+          kubectl apply -f https://kind.sigs.k8s.io/examples/ingress/deploy-ingress-nginx.yaml
+          kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=180s
+
+      - name: Installer MySQL et Kafka
+        run: bash scripts/k8s-ci-setup.sh
+
+      - name: Installer l'application avec Helm
+        run: helm install saga helm/movie-booking --namespace saga --set-string image.tag=${{ github.sha }} --wait --timeout 10m
+
+      - name: Scénarios de bout en bout sur Kubernetes
+        run: bash scripts/e2e-k8s.sh
+
+      - name: Diagnostic en cas d'échec
+        if: failure()
+        run: |
+          kubectl get pods -n saga
+          kubectl describe pods -n saga | tail -120
+          kubectl logs -n saga -l app --all-containers --prefix --tail=40
