@@ -45,7 +45,8 @@ kubectl apply -f k8s/21-kafka-topics-job.yml
 kubectl wait --for=condition=complete job/kafka-init -n "$NS" --timeout=300s
 
 # Compte MySQL dédié aux applications (comme à l'étape 2.2).
-kubectl exec -i -n "$NS" deploy/mysql -- sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD"' <<SQL
+kubectl exec -i -n "$NS" deploy/mysql -- \
+  sh -c 'mysql -h 127.0.0.1 -uroot -p"$MYSQL_ROOT_PASSWORD"' <<SQL
 CREATE USER IF NOT EXISTS 'saga_app'@'%' IDENTIFIED BY '$APP_PW';
 GRANT ALL PRIVILEGES ON mojtabahjava.* TO 'saga_app'@'%';
 FLUSH PRIVILEGES;
