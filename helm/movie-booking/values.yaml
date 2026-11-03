@@ -76,6 +76,11 @@ javaServices:
     replicas: 1
     database: true
     exposeService: true
+    autoscaling:
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 3
+      targetCPUUtilizationPercentage: 50
 
 # Le frontend est différent des services Java : son propre bloc.
 frontend:

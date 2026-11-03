@@ -6,7 +6,12 @@ metadata:
   name: {{ $name }}
   namespace: {{ $.Release.Namespace }}
 spec:
+  # Quand l'autoscaling est actif, c'est le HorizontalPodAutoscaler qui décide
+  # du nombre de pods : on n'écrit pas « replicas », sinon chaque
+  # « helm upgrade » écraserait sa décision.
+  {{- if not (dig "autoscaling" "enabled" false $svc) }}
   replicas: {{ $svc.replicas }}
+  {{- end }}
   strategy:
     {{- toYaml $.Values.strategy | nindent 4 }}
   selector:
@@ -77,5 +82,38 @@ spec:
   ports:
     - port: {{ $svc.port }}
       targetPort: {{ $svc.port }}
+{{- end }}
+{{- if dig "autoscaling" "enabled" false $svc }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ $name }}
+  namespace: {{ $.Release.Namespace }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ $name }}
+  minReplicas: {{ $svc.autoscaling.minReplicas }}
+  maxReplicas: {{ $svc.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ $svc.autoscaling.targetCPUUtilizationPercentage }}
+  behavior:
+    # Une JVM met 2 à 3 minutes à démarrer : on ajoute un seul pod par minute
+    # au lieu de lancer plusieurs démarrages en même temps.
+    scaleUp:
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 60
+    # Délai avant de retirer des pods, raccourci pour la démonstration.
+    scaleDown:
+      stabilizationWindowSeconds: 120
 {{- end }}
 {{- end }}
