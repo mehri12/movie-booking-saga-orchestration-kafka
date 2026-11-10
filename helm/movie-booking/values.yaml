@@ -87,7 +87,7 @@ frontend:
   image: frontend
   port: 8080
   servicePort: 80
-  replicas: 1
+  replicas: 2
   resources:
     requests:
       cpu: 10m
