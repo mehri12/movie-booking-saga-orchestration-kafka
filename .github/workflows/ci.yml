@@ -193,3 +193,34 @@ jobs:
           kubectl get pods -n saga
           kubectl describe pods -n saga | tail -120
           kubectl logs -n saga -l app --all-containers --prefix --tail=40
+  
+  update-image-tag:
+      needs: [ e2e-kubernetes ]
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      runs-on: ubuntu-latest
+      permissions:
+       contents: write
+      concurrency:
+       group: update-image-tag
+       cancel-in-progress: false
+      steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Écrire le nouveau tag d'image dans values.yaml
+        run: |
+          sed -i -E "s|^(  tag: ).*|\1\"${GITHUB_SHA}\"|" helm/movie-booking/values.yaml
+          grep -n '^  tag: ' helm/movie-booking/values.yaml
+
+      - name: Publier le changement dans Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add helm/movie-booking/values.yaml
+          if git diff --cached --quiet; then
+            echo "Rien à publier : le tag est déjà à jour."
+            exit 0
+          fi
+          git commit -m "chore(release): images ${GITHUB_SHA::7} [skip ci]"
+          git pull --rebase origin main
+          git push origin HEAD:main        
