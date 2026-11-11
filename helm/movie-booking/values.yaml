@@ -4,7 +4,7 @@
 image:
   registry: ghcr.io/mehri12
   # Valeur écrite par la CI (job update-image-tag) à chaque version.
-  tag: latest
+  tag: "8da64d2261604587fde656c0166df69a2cd77f79"
 
 # Contenu des ConfigMaps (données non sensibles).
 config:
